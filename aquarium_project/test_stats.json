@@ -1,0 +1,57 @@
+[
+  {
+    "tick": 0,
+    "population": 10,
+    "averageAge": 1,
+    "collisions": 1,
+    "deathsByCollision": 0,
+    "deathsByAge": 0,
+    "birthsByClone": 0,
+    "birthsSpontaneous": 0,
+    "behaviorDistribution": {"Cautious": 1, "Fearful": 4, "Gregarious": 3, "Kamikaze": 2}
+  },
+  {
+    "tick": 1,
+    "population": 9,
+    "averageAge": 2,
+    "collisions": 2,
+    "deathsByCollision": 1,
+    "deathsByAge": 0,
+    "birthsByClone": 0,
+    "birthsSpontaneous": 0,
+    "behaviorDistribution": {"Cautious": 1, "Fearful": 3, "Gregarious": 3, "Kamikaze": 2}
+  },
+  {
+    "tick": 2,
+    "population": 9,
+    "averageAge": 3,
+    "collisions": 0,
+    "deathsByCollision": 0,
+    "deathsByAge": 0,
+    "birthsByClone": 0,
+    "birthsSpontaneous": 0,
+    "behaviorDistribution": {"Cautious": 1, "Fearful": 3, "Gregarious": 3, "Kamikaze": 2}
+  },
+  {
+    "tick": 3,
+    "population": 9,
+    "averageAge": 4,
+    "collisions": 0,
+    "deathsByCollision": 0,
+    "deathsByAge": 0,
+    "birthsByClone": 0,
+    "birthsSpontaneous": 0,
+    "behaviorDistribution": {"Cautious": 1, "Fearful": 3, "Gregarious": 3, "Kamikaze": 2}
+  },
+  {
+    "tick": 4,
+    "population": 9,
+    "averageAge": 5,
+    "collisions": 0,
+    "deathsByCollision": 0,
+    "deathsByAge": 0,
+    "birthsByClone": 0,
+    "birthsSpontaneous": 0,
+    "behaviorDistribution": {"Cautious": 1, "Fearful": 3, "Gregarious": 3, "Kamikaze": 2}
+  }
+]

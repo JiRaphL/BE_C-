@@ -1,0 +1,36 @@
+@startuml
+title Sequence - Un Tick de Simulation
+
+actor User
+participant Simulation
+participant Renderer
+participant Milieu
+participant CollisionManager
+participant LifecycleManager
+participant StatisticsCollector
+
+loop tant que fenêtre ouverte et tick < maxTicks
+  User -> Renderer : events (ESC, etc.)
+  Simulation -> Renderer : processInput()
+  Simulation -> Milieu : step()
+
+  loop pour chaque bestiole vivante
+    Milieu -> Milieu : bestiole.action()
+  end
+
+  Milieu -> CollisionManager : resolve(population)
+  CollisionManager --> Milieu : CollisionStats
+
+  Milieu -> LifecycleManager : ageAndCull(population)
+  LifecycleManager --> Milieu : LifecycleStats (deathsByAge)
+
+  Milieu -> LifecycleManager : processBirthsAndClones(population, factory, w, h)
+  LifecycleManager --> Milieu : LifecycleStats (births)
+
+  Milieu -> Milieu : draw bestioles
+  Simulation -> StatisticsCollector : record(tick, milieu)
+  Simulation -> Renderer : render(milieu)
+  Simulation -> Renderer : wait(delayMs)
+end
+
+@enduml

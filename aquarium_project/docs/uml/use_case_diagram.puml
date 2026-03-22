@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+
+actor "Opérateur" as User
+actor "Évaluateur" as Reviewer
+
+rectangle "Simulation Bestioles" {
+  usecase "Configurer simulation\n(population, comportements,\ncapteurs, accessoires,\ncollision, cycle de vie)" as UC1
+  usecase "Lancer simulation" as UC2
+  usecase "Visualiser aquarium\n(tick par tick)" as UC3
+  usecase "Arrêter simulation" as UC4
+  usecase "Exporter statistiques\nCSV/JSON" as UC5
+  usecase "Analyser résultats\nquantifiés" as UC6
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+Reviewer --> UC6
+Reviewer --> UC3
+
+UC2 --> UC3
+UC2 --> UC5
+UC5 --> UC6
+
+@enduml

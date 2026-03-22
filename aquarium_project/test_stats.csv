@@ -1,0 +1,6 @@
+tick,population,average_age,collisions,deaths_collision,deaths_age,births_clone,births_spontaneous
+0,10,1,1,0,0,0,0
+1,9,2,2,1,0,0,0
+2,9,3,0,0,0,0,0
+3,9,4,0,0,0,0,0
+4,9,5,0,0,0,0,0
