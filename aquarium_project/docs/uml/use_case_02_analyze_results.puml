@@ -1,0 +1,27 @@
+@startuml
+left to right direction
+title Use Case 2 - Exporter et analyser les resultats
+
+actor "Operateur" as User
+actor "Professeur / Evaluateur" as Reviewer
+
+rectangle "Analyse des resultats" {
+  usecase "Executer une simulation" as UC1
+  usecase "Exporter les statistiques\nCSV / JSON" as UC2
+  usecase "Lire les fichiers de resultats" as UC3
+  usecase "Generer les graphiques" as UC4
+  usecase "Comparer les indicateurs\n(population, age, evenements)" as UC5
+}
+
+User --> UC1
+User --> UC2
+User --> UC4
+Reviewer --> UC3
+Reviewer --> UC5
+
+UC2 .> UC1 : <<include>>
+UC4 .> UC2 : <<include>>
+UC5 .> UC3 : <<include>>
+UC5 .> UC4 : <<include>>
+
+@enduml

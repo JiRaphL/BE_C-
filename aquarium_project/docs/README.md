@@ -135,7 +135,10 @@ Fichiers principaux :
 - `sequence_02_perception_strategy_behavior.puml`
 - `sequence_03_collision_lifecycle_factory.puml`
 - `sequence_04_external_events_ihm.puml`
-- `use_case_diagram.puml`
+- `use_case_01_run_simulation.puml`
+- `use_case_02_analyze_results.puml`
+- `use_case_03_population_dynamics.puml`
+- `use_case_04_external_events_ihm.puml`
 
 Si `plantuml` est installe, on peut generer les diagrammes depuis le terminal :
 
@@ -146,7 +149,10 @@ plantuml docs/uml/sequence_01_simulation_orchestration.puml
 plantuml docs/uml/sequence_02_perception_strategy_behavior.puml
 plantuml docs/uml/sequence_03_collision_lifecycle_factory.puml
 plantuml docs/uml/sequence_04_external_events_ihm.puml
-plantuml docs/uml/use_case_diagram.puml
+plantuml docs/uml/use_case_01_run_simulation.puml
+plantuml docs/uml/use_case_02_analyze_results.puml
+plantuml docs/uml/use_case_03_population_dynamics.puml
+plantuml docs/uml/use_case_04_external_events_ihm.puml
 ```
 
 ## Parcours minimal pour verifier le projet de A a Z
