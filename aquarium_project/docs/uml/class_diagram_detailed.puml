@@ -1,0 +1,407 @@
+@startuml
+title BE Bestioles - Diagramme de classes detaille
+
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+hide empty members
+
+skinparam package {
+  BorderColor #475569
+  FontColor #0F172A
+}
+
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #475569
+  FontColor #0F172A
+}
+
+skinparam interface {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #7C2D12
+}
+
+skinparam note {
+  BackgroundColor #FEF3C7
+  BorderColor #D97706
+  FontColor #78350F
+}
+
+package "Pilotage de la simulation" #DBEAFE {
+  class Simulation {
+    - milieuRef : Milieu&
+    - rendererRef : Renderer&
+    - statsRef : StatisticsCollector&
+    - delayMs : int
+    - tick : int
+    - maxTicks : int
+    + run() : void
+    + currentTick() : int
+  }
+
+  class StatisticsCollector {
+    - snapshots : vector<PopulationSnapshot>
+    + record(tick, milieu) : void
+    + exportCsv(filePath) : bool
+    + exportJson(filePath) : bool
+    + history() : vector<PopulationSnapshot>
+    + last() : PopulationSnapshot*
+  }
+
+  class PopulationSnapshot <<struct>> {
+    + tick : int
+    + population : size_t
+    + averageAge : double
+    + collisions : int
+    + deathsByCollision : int
+    + deathsByAge : int
+    + birthsByClone : int
+    + birthsSpontaneous : int
+    + behaviorDistribution : map<string, size_t>
+  }
+
+  class SimulationConfig {
+    - initialPopulation : int
+    - gregariousPercent : double
+    - fearfulPercent : double
+    - kamikazePercent : double
+    - cautiousPercent : double
+    - spontaneousBirthRate : double
+    - cloningRate : double
+    - eyeSensorRate : double
+    - earSensorRate : double
+    - finAccessoryRate : double
+    - shellAccessoryRate : double
+    - camouflageAccessoryRate : double
+    - minLifespanTicks : int
+    - maxLifespanTicks : int
+    - collisionDistance : double
+    - collisionDeathProbability : double
+    - delayMs : int
+    - maxTicks : int
+    + setBehaviorPercentages(...) : void
+    + setSensorRates(...) : void
+    + setAccessoryRates(...) : void
+    + setLifespanTicks(...) : void
+    + setCollisionParams(...) : void
+    + setTiming(...) : void
+  }
+}
+
+package "Domaine metier" #DCFCE7 {
+  class Milieu {
+    - width : int
+    - height : int
+    - listeBestioles : vector<unique_ptr<Bestiole>>
+    - collisionManager : unique_ptr<CollisionManager>
+    - lifecycleManager : unique_ptr<LifecycleManager>
+    - bestioleFactory : BestioleFactory*
+    - lastStepStats : RuntimeStepStats
+    - externalEventStatsValue : ExternalEventStats
+    + step() : void
+    + configureRuntime(factory, config) : void
+    + addMember(b) : void
+    + forceExternalBirths(count) : size_t
+    + forceExternalDeaths(count) : size_t
+    + forceExternalBehaviorSwitches(count) : size_t
+    + triggerFoodPulse() : void
+    + triggerPollution() : void
+    + triggerDisturbance() : void
+    + populationSize() : size_t
+    + population() : vector<unique_ptr<Bestiole>>
+    + stepStats() : RuntimeStepStats
+    + externalEventStats() : ExternalEventStats
+    + nbVoisins(b) : int
+    + plusProcheVoisine(b) : Bestiole*
+  }
+
+  class Bestiole {
+    - identite : int
+    - x : int
+    - y : int
+    - orientation : double
+    - vitesse : double
+    - vitesseBase : double
+    - alive : bool
+    - age : int
+    - maxAge : int
+    - couleur : T*
+    - comportement : unique_ptr<IBehavior>
+    - sensors : vector<unique_ptr<ISensor>>
+    - accessories : vector<unique_ptr<IAccessory>>
+    + action(monMilieu) : void
+    + draw(support) : void
+    + jeTeVois(b) : bool
+    + avance(monMilieu) : void
+    + orienterVers(x, y, intensite) : void
+    + orienterOppose(x, y, intensite) : void
+    + demiTour() : void
+    + setVitesse(v) : void
+    + resetVitesse() : void
+    + distance(b) : double
+    + kill() : void
+    + revive() : void
+    + setComportement(c) : void
+    + addSensor(sensor) : void
+    + addAccessory(accessory) : void
+    + getCruiseSpeed() : double
+    + getDeathResistance() : double
+    + getCamouflageLevel() : double
+  }
+
+  enum BehaviorKind {
+    Gregarious
+    Fearful
+    Kamikaze
+    Cautious
+  }
+
+  class BestioleFactory {
+    - config : SimulationConfig&
+    - rng : mt19937
+    - pickBehaviorKind() : BehaviorKind
+    - createBehavior(kind) : unique_ptr<IBehavior>
+    - createBestiole(kind) : unique_ptr<Bestiole>
+    - equipSensors(bestiole) : void
+    - equipAccessories(bestiole) : void
+    + createFromConfig() : unique_ptr<Bestiole>
+    + createBehaviorFromConfig() : unique_ptr<IBehavior>
+    + createInitialPopulation() : vector<unique_ptr<Bestiole>>
+    + tryCreateSpontaneousBirth() : unique_ptr<Bestiole>
+    + tryCreateClone(parent) : unique_ptr<Bestiole>
+  }
+
+  class RuntimeStepStats <<struct>> {
+    + collisions : int
+    + deathsByCollision : int
+    + deathsByAge : int
+    + birthsByClone : int
+    + birthsSpontaneous : int
+  }
+
+  class ExternalEventStats <<struct>> {
+    + birthsByExternalEvent : int
+    + deathsByExternalEvent : int
+    + behaviorSwitchesByExternalEvent : int
+    + foodPulses : int
+    + pollutionEvents : int
+    + disturbanceEvents : int
+  }
+}
+
+package "Managers runtime" #F3E8FF {
+  class CollisionManager {
+    - collisionDistance : double
+    - baseDeathProbability : double
+    - rng : mt19937
+    + resolve(population) : CollisionStats
+  }
+
+  class CollisionStats <<struct>> {
+    + collisions : int
+    + deaths : int
+  }
+
+  class LifecycleManager {
+    - minLifespan : int
+    - maxLifespan : int
+    - rng : mt19937
+    - sampleLifespan() : int
+    + initializeNewborn(bestiole) : void
+    + ageAndCull(population) : LifecycleStats
+    + processBirthsAndClones(population, factory, width, height) : LifecycleStats
+  }
+
+  class LifecycleStats <<struct>> {
+    + deathsByAge : int
+    + birthsByClone : int
+    + birthsSpontaneous : int
+  }
+}
+
+package "IHM / rendu" #DBEAFE {
+  class SimulationInput <<struct>> {
+    + requestClose : bool
+    + togglePause : bool
+    + triggerFoodPulse : bool
+    + triggerPollution : bool
+    + triggerDisturbance : bool
+    + forcedBirths : int
+    + forcedDeaths : int
+    + forcedBehaviorSwitches : int
+  }
+
+  interface Renderer {
+    + shouldClose() : bool
+    + processInput() : SimulationInput
+    + render(milieu) : void
+    + wait(delayMs) : void
+  }
+
+  class CImgRenderer {
+    - displayWindow : CImgDisplay
+    - showHud : bool
+    - drawHud(frame, milieu) : void
+    + processInput() : SimulationInput
+    + render(milieu) : void
+  }
+}
+
+package "Strategy - comportements" #FFF7ED {
+  interface IBehavior {
+    + clone() : unique_ptr<IBehavior>
+    + apply(bestiole, milieu) : void
+    + name() : char*
+  }
+
+  class GregariousBehavior {
+    + apply(bestiole, milieu) : void
+  }
+
+  class FearfulBehavior {
+    + apply(bestiole, milieu) : void
+  }
+
+  class KamikazeBehavior {
+    + apply(bestiole, milieu) : void
+  }
+
+  class CautiousBehavior {
+    + apply(bestiole, milieu) : void
+  }
+}
+
+package "Composition - capteurs" #FFF7ED {
+  interface ISensor {
+    + clone() : unique_ptr<ISensor>
+    + detects(observer, target) : bool
+    + getDetectionCapacity() : double
+  }
+
+  class EyeSensor {
+    - angularField : double
+    - maxDistance : double
+    - detectionCapacity : double
+    + detects(observer, target) : bool
+  }
+
+  class EarSensor {
+    - maxDistance : double
+    - detectionCapacity : double
+    + detects(observer, target) : bool
+  }
+}
+
+package "Composition - accessoires" #FFF7ED {
+  interface IAccessory {
+    + clone() : unique_ptr<IAccessory>
+    + speedMultiplier() : double
+    + speedDivisor() : double
+    + deathResistanceMultiplier() : double
+    + camouflageLevel() : double
+  }
+
+  class FinAccessory {
+    - speedCoeff : double
+    + speedMultiplier() : double
+  }
+
+  class ShellAccessory {
+    - speedPenalty : double
+    - resistanceCoeff : double
+    + speedDivisor() : double
+    + deathResistanceMultiplier() : double
+  }
+
+  class CamouflageAccessory {
+    - camouflageCoeff : double
+    + camouflageLevel() : double
+  }
+}
+
+package "Types externes" #FDE68A {
+  class UImg <<external>>
+  class CImgDisplay <<external>>
+}
+
+Simulation --> Milieu : orchestre
+Simulation --> Renderer : pilote
+Simulation --> StatisticsCollector : alimente
+
+StatisticsCollector *-- PopulationSnapshot
+StatisticsCollector ..> Milieu : observe
+
+Milieu --|> UImg
+Milieu *-- "0..*" Bestiole
+Milieu *-- CollisionManager
+Milieu *-- LifecycleManager
+Milieu --> BestioleFactory
+Milieu *-- RuntimeStepStats
+Milieu *-- ExternalEventStats
+
+BestioleFactory --> SimulationConfig
+BestioleFactory --> BehaviorKind
+BestioleFactory ..> IBehavior : cree
+BestioleFactory ..> ISensor : equipe
+BestioleFactory ..> IAccessory : equipe
+BestioleFactory --> Bestiole : instancie
+
+Bestiole *-- "1" IBehavior : strategie
+Bestiole *-- "0..*" ISensor : percoit via
+Bestiole *-- "0..*" IAccessory : modifie via
+Bestiole ..> Milieu : interagit avec
+
+LifecycleManager ..> BestioleFactory : naissances
+LifecycleManager --> LifecycleStats
+LifecycleManager ..> Bestiole
+
+CollisionManager --> CollisionStats
+CollisionManager ..> Bestiole
+
+Renderer <|.. CImgRenderer
+Renderer --> SimulationInput
+CImgRenderer *-- CImgDisplay
+CImgRenderer ..> Milieu : affiche
+
+IBehavior <|.. GregariousBehavior
+IBehavior <|.. FearfulBehavior
+IBehavior <|.. KamikazeBehavior
+IBehavior <|.. CautiousBehavior
+
+ISensor <|.. EyeSensor
+ISensor <|.. EarSensor
+
+IAccessory <|.. FinAccessory
+IAccessory <|.. ShellAccessory
+IAccessory <|.. CamouflageAccessory
+
+note top of Bestiole
+  Classe centrale du domaine.
+  Le comportement, les capteurs et les accessoires
+  sont injectes par composition.
+end note
+
+note right of IBehavior
+  Pattern Strategy :
+  chaque comportement est interchangeable
+  sans sous-classes de Bestiole.
+end note
+
+note bottom of BestioleFactory
+  Pattern Factory :
+  creation centralisee de la population initiale,
+  des clones, des naissances spontanees
+  et des changements de comportement.
+end note
+
+note right of Milieu
+  Le milieu coordonne :
+  deplacements, collisions, cycle de vie,
+  statistiques d'etape et evenements exterieurs.
+end note
+
+@enduml

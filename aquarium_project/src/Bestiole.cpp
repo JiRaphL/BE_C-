@@ -48,7 +48,7 @@ Bestiole::Bestiole( std::unique_ptr<IBehavior> comportementInit )
 
    identite = ++next;
 
-   cout << "const Bestiole (" << identite << ") par defaut" << endl;
+   std::cout << "const Bestiole (" << identite << ") par defaut" << std::endl;
 
    x = y = 0;
    cumulX = cumulY = 0.;
@@ -74,7 +74,7 @@ Bestiole::Bestiole( const Bestiole & b )
 
    identite = ++next;
 
-   cout << "const Bestiole (" << identite << ") par copie" << endl;
+   std::cout << "const Bestiole (" << identite << ") par copie" << std::endl;
 
    x = b.x;
    y = b.y;
@@ -138,7 +138,7 @@ Bestiole::~Bestiole( void )
 
    delete[] couleur;
 
-   cout << "dest Bestiole" << endl;
+   std::cout << "dest Bestiole" << std::endl;
 
 }
 
@@ -279,6 +279,7 @@ bool Bestiole::jeTeVois( const Bestiole & b ) const
    if ( sensors.empty() )
       return false;
 
+   // A target is perceived when at least one sensor detects it strongly enough.
    for ( std::vector<std::unique_ptr<ISensor>>::const_iterator it = sensors.begin(); it != sensors.end(); ++it )
    {
       if ( ( *it )->detects( *this, b ) && ( *it )->getDetectionCapacity() > b.getCamouflageLevel() )

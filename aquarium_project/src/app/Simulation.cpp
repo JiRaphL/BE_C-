@@ -32,6 +32,7 @@ void Simulation::run( void )
       if ( input.togglePause )
          paused = !paused;
 
+      // External events are injected before the next simulation step.
       if ( input.triggerFoodPulse )
          milieuRef.triggerFoodPulse();
       if ( input.triggerPollution )

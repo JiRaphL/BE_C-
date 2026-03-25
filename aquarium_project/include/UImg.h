@@ -4,11 +4,8 @@
 
 #include <CImg.h>
 
-using namespace cimg_library;
-
-
 typedef unsigned char      T;
-typedef CImg<T>            UImg;
+typedef cimg_library::CImg<T> UImg;
 
 
 #endif

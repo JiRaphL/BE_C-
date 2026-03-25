@@ -19,7 +19,7 @@ Milieu::Milieu( int _width, int _height ) : UImg( _width, _height, 1, 3 ),
                                             rng( std::random_device{}() )
 {
 
-   cout << "const Milieu" << endl;
+   std::cout << "const Milieu" << std::endl;
 
    std::srand( time(NULL) );
 
@@ -29,7 +29,7 @@ Milieu::Milieu( int _width, int _height ) : UImg( _width, _height, 1, 3 ),
 Milieu::~Milieu( void )
 {
 
-   cout << "dest Milieu" << endl;
+   std::cout << "dest Milieu" << std::endl;
 
 }
 
@@ -156,6 +156,7 @@ std::size_t Milieu::forceExternalBehaviorSwitches( int count )
    {
       std::uniform_int_distribution<std::size_t> pick( 0, listeBestioles.size() - 1 );
       const std::size_t idx = pick( rng );
+      // External events reuse the factory so behavior changes stay consistent with configuration.
       listeBestioles[ idx ]->setComportement( bestioleFactory->createBehaviorFromConfig() );
       ++switched;
    }

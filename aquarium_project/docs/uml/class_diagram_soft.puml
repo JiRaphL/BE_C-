@@ -1,0 +1,210 @@
+@startuml
+title BE Bestioles - Diagramme de classes pour soutenance
+
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+hide empty members
+
+skinparam package {
+  BorderColor #475569
+  FontColor #0F172A
+}
+
+skinparam class {
+  BackgroundColor #F8FAFC
+  BorderColor #475569
+  FontColor #0F172A
+}
+
+skinparam interface {
+  BackgroundColor #FFF7ED
+  BorderColor #C2410C
+  FontColor #7C2D12
+}
+
+skinparam note {
+  BackgroundColor #ECFCCB
+  BorderColor #65A30D
+  FontColor #365314
+}
+
+package "Pilotage" #DBEAFE {
+  class Simulation {
+    - delayMs : int
+    - tick : int
+    + run() : void
+  }
+
+  class SimulationConfig {
+    + setBehaviorPercentages(...) : void
+    + setSensorRates(...) : void
+    + setAccessoryRates(...) : void
+    + setLifespanTicks(...) : void
+    + setCollisionParams(...) : void
+    + setTiming(...) : void
+  }
+
+  class StatisticsCollector {
+    + record(tick, milieu) : void
+    + exportCsv(path) : bool
+    + exportJson(path) : bool
+  }
+}
+
+package "Domaine" #DCFCE7 {
+  class Milieu {
+    - listeBestioles : vector<unique_ptr<Bestiole>>
+    + step() : void
+    + configureRuntime(factory, config) : void
+    + addMember(b) : void
+    + triggerFoodPulse() : void
+    + triggerPollution() : void
+    + triggerDisturbance() : void
+    + nbVoisins(b) : int
+    + plusProcheVoisine(b) : Bestiole*
+  }
+
+  class Bestiole {
+    - identite : int
+    - orientation : double
+    - vitesse : double
+    - age : int
+    + action(milieu) : void
+    + draw(support) : void
+    + jeTeVois(b) : bool
+    + setComportement(c) : void
+    + addSensor(sensor) : void
+    + addAccessory(accessory) : void
+  }
+
+  class BestioleFactory {
+    + createInitialPopulation() : vector<unique_ptr<Bestiole>>
+    + createFromConfig() : unique_ptr<Bestiole>
+    + tryCreateSpontaneousBirth() : unique_ptr<Bestiole>
+    + tryCreateClone(parent) : unique_ptr<Bestiole>
+    + createBehaviorFromConfig() : unique_ptr<IBehavior>
+  }
+}
+
+package "Runtime" #F3E8FF {
+  class CollisionManager {
+    + resolve(population) : CollisionStats
+  }
+
+  class LifecycleManager {
+    + initializeNewborn(bestiole) : void
+    + ageAndCull(population) : LifecycleStats
+    + processBirthsAndClones(population, factory, width, height) : LifecycleStats
+  }
+}
+
+package "IHM" #DBEAFE {
+  interface Renderer {
+    + processInput() : SimulationInput
+    + render(milieu) : void
+  }
+
+  class CImgRenderer {
+    - showHud : bool
+    + processInput() : SimulationInput
+    + render(milieu) : void
+  }
+
+  class SimulationInput <<struct>> {
+    + requestClose : bool
+    + forcedBirths : int
+    + forcedDeaths : int
+    + forcedBehaviorSwitches : int
+  }
+}
+
+package "Strategy" #FFF7ED {
+  interface IBehavior {
+    + apply(bestiole, milieu) : void
+    + clone() : unique_ptr<IBehavior>
+  }
+
+  class GregariousBehavior
+  class FearfulBehavior
+  class KamikazeBehavior
+  class CautiousBehavior
+}
+
+package "Composition" #FFF7ED {
+  interface ISensor {
+    + detects(observer, target) : bool
+  }
+
+  class EyeSensor
+  class EarSensor
+
+  interface IAccessory {
+    + speedMultiplier() : double
+    + camouflageLevel() : double
+  }
+
+  class FinAccessory
+  class ShellAccessory
+  class CamouflageAccessory
+}
+
+Simulation --> Milieu : orchestre
+Simulation --> Renderer : pilote l'IHM
+Simulation --> StatisticsCollector : trace la simulation
+
+Milieu *-- "0..*" Bestiole
+Milieu *-- CollisionManager
+Milieu *-- LifecycleManager
+Milieu --> BestioleFactory
+
+BestioleFactory --> SimulationConfig
+BestioleFactory --> Bestiole : cree
+BestioleFactory ..> IBehavior
+BestioleFactory ..> ISensor
+BestioleFactory ..> IAccessory
+
+Bestiole *-- IBehavior : comportement
+Bestiole *-- "0..*" ISensor : capteurs
+Bestiole *-- "0..*" IAccessory : accessoires
+Bestiole ..> Milieu : observe / agit
+
+Renderer <|.. CImgRenderer
+Renderer --> SimulationInput
+CImgRenderer ..> Milieu : affiche
+
+IBehavior <|.. GregariousBehavior
+IBehavior <|.. FearfulBehavior
+IBehavior <|.. KamikazeBehavior
+IBehavior <|.. CautiousBehavior
+
+ISensor <|.. EyeSensor
+ISensor <|.. EarSensor
+
+IAccessory <|.. FinAccessory
+IAccessory <|.. ShellAccessory
+IAccessory <|.. CamouflageAccessory
+
+note right of IBehavior
+  Strategy
+  Le comportement d'une bestiole est interchangeable
+  sans modifier la classe Bestiole.
+end note
+
+note bottom of BestioleFactory
+  Factory
+  Toute creation de bestiole est centralisee
+  pour la population initiale, le clonage,
+  les naissances spontanees et les changements
+  de comportement.
+end note
+
+note right of Bestiole
+  Composition
+  Une bestiole assemble dynamiquement
+  ses capteurs et ses accessoires.
+end note
+
+@enduml

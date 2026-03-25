@@ -1,0 +1,62 @@
+@startuml
+title Sequence 4 - Evenements exterieurs influencant la simulation
+
+actor Utilisateur
+participant CImgRenderer
+participant Simulation
+participant Milieu
+participant BestioleFactory
+participant LifecycleManager
+participant "Bestiole" as Bestiole
+
+Utilisateur -> CImgRenderer : touche clavier\n(N / K / C / F / P / D)
+Simulation -> CImgRenderer : processInput()
+CImgRenderer --> Simulation : SimulationInput
+
+alt touche N ou FoodPulse
+  Simulation -> Milieu : forceExternalBirths(n)\nou triggerFoodPulse()
+  alt triggerFoodPulse()
+    Milieu -> Milieu : foodPulses++
+    Milieu -> Milieu : forceExternalBirths(3)
+  end
+  loop pour chaque naissance
+    Milieu -> BestioleFactory : createFromConfig()
+    BestioleFactory --> Milieu : newborn
+    Milieu -> LifecycleManager : initializeNewborn(newborn)
+    Milieu -> Milieu : ajout a la population
+  end
+else touche K ou Pollution
+  Simulation -> Milieu : forceExternalDeaths(n)\nou triggerPollution()
+  alt triggerPollution()
+    Milieu -> Milieu : pollutionEvents++
+    Milieu -> Milieu : forceExternalDeaths(population/4)
+  end
+  loop pour chaque victime tiree au hasard
+    Milieu -> Bestiole : kill()
+    Milieu -> Milieu : retrait de la population
+  end
+else touche C ou Disturbance
+  Simulation -> Milieu : forceExternalBehaviorSwitches(n)\nou triggerDisturbance()
+  alt triggerDisturbance()
+    Milieu -> Milieu : disturbanceEvents++
+    Milieu -> Milieu : forceExternalBehaviorSwitches(population/3)
+  end
+  loop pour chaque bestiole choisie
+    Milieu -> BestioleFactory : createBehaviorFromConfig()
+    BestioleFactory --> Milieu : new behavior
+    Milieu -> Bestiole : setComportement(new behavior)
+  end
+end
+
+Simulation -> CImgRenderer : render(milieu)
+CImgRenderer -> CImgRenderer : drawHud(...)
+
+note right of Milieu
+  Valeur presentee :
+  l'IHM ne sert pas seulement a afficher.
+  Elle permet aussi de demonstrer des
+  evenements exterieurs influents,
+  explicitement demandes dans le cahier des charges.
+end note
+
+@enduml

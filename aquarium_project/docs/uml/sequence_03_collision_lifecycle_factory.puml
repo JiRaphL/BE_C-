@@ -1,0 +1,64 @@
+@startuml
+title Sequence 3 - Collisions, vieillissement, naissances et clonage
+
+participant Milieu
+participant CollisionManager
+participant LifecycleManager
+participant BestioleFactory
+participant "Bestiole A" as A
+participant "Bestiole B" as B
+participant "Clone" as Clone
+participant "Newborn" as Newborn
+
+Milieu -> CollisionManager : resolve(population)
+loop pour chaque paire de bestioles
+  CollisionManager -> A : distance(B)
+  A --> CollisionManager : distance
+  alt collision detectee
+    alt mort probable
+      CollisionManager -> A : kill()
+      CollisionManager -> B : kill()
+    else survie
+      CollisionManager -> A : demiTour()
+      CollisionManager -> B : demiTour()
+    end
+  end
+end
+CollisionManager --> Milieu : CollisionStats
+
+Milieu -> LifecycleManager : ageAndCull(population)
+loop pour chaque bestiole survivante
+  LifecycleManager -> A : incrementAge()
+  alt age >= maxAge
+    LifecycleManager -> A : kill()
+  end
+end
+LifecycleManager --> Milieu : LifecycleStats(deathsByAge)
+
+Milieu -> LifecycleManager : processBirthsAndClones(population, factory, w, h)
+loop pour chaque parent vivant
+  LifecycleManager -> BestioleFactory : tryCreateClone(parent)
+  alt clonage accepte
+    BestioleFactory --> LifecycleManager : Clone
+    LifecycleManager -> Clone : initializeNewborn()
+    LifecycleManager -> Clone : setCoords(parent.x, parent.y)
+  end
+end
+
+LifecycleManager -> BestioleFactory : tryCreateSpontaneousBirth()
+alt naissance spontanee acceptee
+  BestioleFactory --> LifecycleManager : Newborn
+  LifecycleManager -> Newborn : initializeNewborn()
+  LifecycleManager -> Newborn : initCoords(w, h)
+end
+
+LifecycleManager --> Milieu : LifecycleStats(births)
+
+note right of BestioleFactory
+  Valeur presentee :
+  la creation est centralisee via Factory
+  pour la population initiale, le clonage
+  et les naissances spontanees.
+end note
+
+@enduml

@@ -1,0 +1,61 @@
+@startuml
+title Sequence 2 - Perception de l'environnement et application d'une strategie
+
+participant Milieu
+participant "Bestiole" as BestioleActrice
+participant "IBehavior\n(ex: FearfulBehavior)" as Behavior
+participant "ISensor\n(EyeSensor ou EarSensor)" as Sensor
+participant "Bestiole voisine" as Cible
+
+Milieu -> BestioleActrice : action(*this)
+BestioleActrice -> Behavior : apply(bestiole, milieu)
+
+alt comportement base sur le nombre de voisins
+  Behavior -> Milieu : nbVoisins(bestiole)
+  loop pour chaque autre bestiole
+    Milieu -> BestioleActrice : jeTeVois(cible)
+    loop pour chaque capteur compose
+      BestioleActrice -> Sensor : detects(observer, cible)
+      Sensor --> BestioleActrice : visible / non visible
+    end
+    BestioleActrice -> Cible : getCamouflageLevel()
+    Cible --> BestioleActrice : niveau de camouflage
+    BestioleActrice --> Milieu : cible detectee / ignoree
+  end
+  Milieu --> Behavior : nombre de voisins detectes
+  alt seuil depasse
+    Behavior -> BestioleActrice : demiTour()
+    Behavior -> BestioleActrice : setVitesse(...)
+  else seuil non depasse
+    Behavior -> BestioleActrice : resetVitesse()
+  end
+else comportement base sur la cible la plus proche
+  Behavior -> Milieu : plusProcheVoisine(bestiole)
+  Milieu --> Behavior : cible la plus proche
+  alt cible trouvee
+    Behavior -> BestioleActrice : orienterVers(...) / orienterOppose(...)
+    Behavior -> BestioleActrice : setVitesse(...) / resetVitesse()
+  else aucune cible
+    Behavior -> BestioleActrice : resetVitesse()
+  end
+end
+
+Behavior -> BestioleActrice : avance(milieu)
+BestioleActrice -> Milieu : getWidth()
+Milieu --> BestioleActrice : width
+BestioleActrice -> Milieu : getHeight()
+Milieu --> BestioleActrice : height
+BestioleActrice -> BestioleActrice : bouge() avec rebond sur frontieres
+
+note right of Behavior
+  Valeur presentee :
+  les comportements sont interchangeables
+  grace au pattern Strategy.
+end note
+
+note over BestioleActrice
+  La perception est modulaire :
+  une bestiole combine plusieurs capteurs
+  et tient compte du camouflage de la cible.
+end note
+@enduml

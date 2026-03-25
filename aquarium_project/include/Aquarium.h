@@ -5,14 +5,10 @@
 #include <iostream>
 #include <CImg.h>
 
-using namespace std;
-using namespace cimg_library;
-
-
 class Milieu;
 
 
-class Aquarium : public CImgDisplay
+class Aquarium : public cimg_library::CImgDisplay
 {
 
 private :

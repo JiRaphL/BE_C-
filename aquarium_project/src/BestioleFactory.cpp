@@ -42,6 +42,7 @@ BehaviorKind BestioleFactory::pickBehaviorKind( void )
 
 std::unique_ptr<Bestiole> BestioleFactory::createBestiole( BehaviorKind kind )
 {
+   // Factory centralizes behavior, sensors and accessories assembly.
    std::unique_ptr<Bestiole> b = std::make_unique<Bestiole>( createBehavior( kind ) );
 
    equipSensors( *b );

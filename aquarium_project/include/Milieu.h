@@ -11,8 +11,6 @@
 #include <random>
 #include <vector>
 
-using namespace std;
-
 class BestioleFactory;
 class CollisionManager;
 class LifecycleManager;
@@ -70,7 +68,7 @@ public :
    void triggerFoodPulse( void );
    void triggerPollution( void );
    void triggerDisturbance( void );
-    std::size_t populationSize( void ) const { return listeBestioles.size(); }
+   std::size_t populationSize( void ) const { return listeBestioles.size(); }
    const std::vector<std::unique_ptr<Bestiole>> & population( void ) const { return listeBestioles; }
    const RuntimeStepStats & stepStats( void ) const { return lastStepStats; }
    const ExternalEventStats & externalEventStats( void ) const { return externalEventStatsValue; }

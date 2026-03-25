@@ -1,0 +1,55 @@
+@startuml
+title Sequence 1 - Orchestration complete d'un tick de simulation
+
+actor Utilisateur
+participant Simulation
+participant Renderer
+participant Milieu
+participant CollisionManager
+participant LifecycleManager
+participant StatisticsCollector
+
+loop tant que la fenetre est ouverte et que la simulation continue
+  Utilisateur -> Renderer : interaction clavier / fermeture
+  Simulation -> Renderer : processInput()
+  Renderer --> Simulation : SimulationInput
+
+  alt demande de fermeture
+    Simulation -> Simulation : arret de la boucle
+  else simulation active
+    alt pause active
+      Simulation -> Renderer : render(milieu)
+      Simulation -> Renderer : wait(delayMs)
+    else execution d'un tick
+      Simulation -> Milieu : step()
+
+      loop pour chaque bestiole vivante
+        Milieu -> Milieu : bestiole.action(*this)
+      end
+
+      Milieu -> CollisionManager : resolve(population)
+      CollisionManager --> Milieu : CollisionStats
+
+      Milieu -> LifecycleManager : ageAndCull(population)
+      LifecycleManager --> Milieu : LifecycleStats
+
+      Milieu -> LifecycleManager : processBirthsAndClones(population, factory, w, h)
+      LifecycleManager --> Milieu : LifecycleStats
+
+      Milieu -> Milieu : redraw aquarium image
+
+      Simulation -> StatisticsCollector : record(tick, milieu)
+      Simulation -> Renderer : render(milieu)
+      Simulation -> Renderer : wait(delayMs)
+      Simulation -> Simulation : tick++
+    end
+  end
+end
+
+note right of Simulation
+  Ce diagramme montre la valeur d'architecture :
+  la classe Simulation orchestre sans porter
+  la logique metier detaillee.
+end note
+
+@enduml

@@ -9,8 +9,6 @@
 #include <memory>
 #include <vector>
 
-using namespace std;
-
 
 class Milieu;
 class IBehavior;
@@ -40,7 +38,9 @@ private :
    int               maxAge;
 
    T               * couleur;
+   // Runtime-selected behavior strategy.
    std::unique_ptr<IBehavior> comportement;
+   // Sensors and accessories are assembled by composition.
    std::vector<std::unique_ptr<ISensor>> sensors;
    std::vector<std::unique_ptr<IAccessory>> accessories;
 
@@ -50,13 +50,12 @@ private :
    double speedMultiplier( void ) const;
    double speedDivisor( void ) const;
 
-public :                                           // Forme canonique :
-   Bestiole( void );                               // Constructeur par defaut
+public :
+   Bestiole( void );
    Bestiole( std::unique_ptr<IBehavior> comportementInit );
-   Bestiole( const Bestiole & b );                 // Constructeur de copies
+   Bestiole( const Bestiole & b );
    Bestiole & operator=( const Bestiole & b );
-   ~Bestiole( void );                              // Destructeur
-                                                   // Operateur d'affectation binaire par defaut
+   ~Bestiole( void );
    void action( Milieu & monMilieu );
    void draw( UImg & support );
 
